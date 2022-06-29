@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
+from .views import Match
 
 class WordleConsumer(WebsocketConsumer):
 
@@ -15,23 +16,35 @@ class WordleConsumer(WebsocketConsumer):
             self.channel_name
         )
 
+        match = Match.objects.get(pk=match_id)
+
+        if match.has_started:
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'get_game_data'
+                }
+            )
+
         self.accept()
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        from_id = text_data_json['from_id']
-        attempts = text_data_json['opponent_attempts']
-        colors = text_data_json['opponent_colors']
 
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
-            {
-                'type': 'update_game',
-                'attempts': attempts,
-                'colors': colors,
-                'from_id': from_id
-            }
-        )
+        if text_data_json['type'] == 'update_game':
+            from_id = text_data_json['from_id']
+            attempts = text_data_json['opponent_attempts']
+            colors = text_data_json['opponent_colors']
+
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'update_game',
+                    'attempts': attempts,
+                    'colors': colors,
+                    'from_id': from_id
+                }
+            )
     
     def update_game(self, event):
         attempts = event['attempts']
@@ -39,8 +52,13 @@ class WordleConsumer(WebsocketConsumer):
         from_id = event['from_id']
 
         self.send(text_data=json.dumps({
-            'type': 'chat',
+            'type': 'update_game',
             'opponent_attempts': attempts,
             'opponent_colors': colors,
             'from_id': from_id
+        }))
+
+    def get_game_data(self, event):
+        self.send(text_data=json.dumps({
+            'type': 'get_game_data'
         }))
