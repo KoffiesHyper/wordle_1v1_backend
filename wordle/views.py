@@ -17,7 +17,7 @@ def JoinMatchView(request):
     if match:
         match.add_player(newPlayer)
         match.player_count = 2
-        match.started=True
+        match.has_started=True
         match.save()
         serializer = MatchSerializer(match)
         return Response(serializer.data)

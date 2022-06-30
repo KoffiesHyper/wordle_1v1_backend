@@ -12,7 +12,7 @@ class Match(models.Model):
     players = models.ManyToManyField('Player')
     player_count = models.IntegerField()
     boards = models.JSONField(default={})
-    # has_started = models.BooleanField(default=False)
+    has_started = models.BooleanField(default=False)
 
     def add_player(self, newPlayer):
         if newPlayer not in self.players.all():
