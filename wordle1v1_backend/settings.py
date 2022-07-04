@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9$8#hy&l$)1h^9k#7=@ezk1o$x5-=9bb-q20+!yn-jn)uqdf7c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://wordel-1v1-backend.herokuapp.com/']
 
 
 # Application definition

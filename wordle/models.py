@@ -13,6 +13,7 @@ class Match(models.Model):
     player_count = models.IntegerField()
     boards = models.JSONField(default={})
     has_started = models.BooleanField(default=False)
+    to_guess = models.CharField(max_length=12, blank=True)
 
     def add_player(self, newPlayer):
         if newPlayer not in self.players.all():

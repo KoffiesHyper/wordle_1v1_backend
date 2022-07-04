@@ -9,8 +9,6 @@ class WordleConsumer(WebsocketConsumer):
         match_id = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'match_' + match_id
 
-        print(self.room_group_name)
-
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
             self.channel_name
@@ -45,6 +43,26 @@ class WordleConsumer(WebsocketConsumer):
                     'from_id': from_id
                 }
             )
+        
+        if text_data_json['type'] == 'give_game_data':
+            from_id = text_data_json['from_id']
+            attempts = text_data_json['attempts']
+            colors = text_data_json['colors']
+            opponent_attempts = text_data_json['opponent_attempts']
+            opponent_colors = text_data_json['opponent_colors']
+
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'give_game_data',
+                    'attempts': attempts,
+                    'colors': colors,
+                    'opponent_attempts': opponent_attempts,
+                    'opponent_colors': opponent_colors,
+                    'from_id': from_id
+                }
+            )
+
     
     def update_game(self, event):
         attempts = event['attempts']
@@ -61,4 +79,14 @@ class WordleConsumer(WebsocketConsumer):
     def get_game_data(self, event):
         self.send(text_data=json.dumps({
             'type': 'get_game_data'
+        }))
+
+    def give_game_data(self, event):
+        self.send(text_data=json.dumps({
+            'type': 'give_game_data',
+            'attempts': event['attempts'],
+            'colors': event['colors'],
+            'opponent_attempts': event['opponent_attempts'],
+            'opponent_colors': event['opponent_colors'],
+            'from_id': event['from_id']
         }))
